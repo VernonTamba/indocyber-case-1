@@ -7,7 +7,7 @@
 
 ## How to set up and run the application locally?
 
-- Clone the repo: `git clone https://github.com/VernonTamba/indocyber-case-2.git`
+- Clone the repo: `git clone https://github.com/VernonTamba/indocyber-case-1.git`
 - Recommended: `Node.js v20.x`
 - **Install:** `npm i` or `yarn install`
 - **Start:** `npm run dev` or `yarn dev`
