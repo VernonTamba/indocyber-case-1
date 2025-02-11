@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import { Alert, Button, Snackbar } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
@@ -15,49 +16,120 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
+const getRandomToken = () => localStorage.getItem('token');
+
 export function SignInView() {
   const router = useRouter();
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [emailValue, setEmailValue] = useState('');
+
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [showInfoSnackbar, setShowInfoSnackbar] = useState(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+
+  const handleClose = () => {
+    setShowSnackbar(false);
+  };
 
   const handleSignIn = useCallback(() => {
-    router.push('/');
+    const currentToken = localStorage.getItem('token');
+
+    if (!currentToken) {
+      setShowSnackbar(true);
+    } else {
+      setShowSuccessSnackbar(true);
+      setTimeout(() => {
+        router.push('/');
+      }, 3000);
+    }
   }, [router]);
 
+  const handleGenerateKey = useCallback(() => {
+    const randomToken = Math.random().toString(36).substring(2);
+    localStorage.setItem('token', randomToken);
+    setShowInfoSnackbar(true);
+  }, []);
+
+  const isEmailValid =
+    emailValue.includes('@') && emailValue.trim().length > 0 && emailValue.includes('gmail.com');
+
   const renderForm = (
-    <Box display="flex" flexDirection="column" alignItems="flex-end">
+    <Box display="flex" flexDirection="column" alignItems="flex-start">
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showSnackbar}
+        onClose={handleClose}
+        autoHideDuration={3000}
+        message="No token found! Click the magic link first!"
+        key={1}
+      >
+        <Alert onClose={handleClose} severity="error" variant="filled" sx={{ width: '100%' }}>
+          Token not found! Try clicking the magic link first!
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showInfoSnackbar}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        key={2}
+      >
+        <Alert onClose={handleClose} severity="info" variant="filled" sx={{ width: '100%' }}>
+          Token is set! You can now login!
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showSuccessSnackbar}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        key={3}
+      >
+        <Alert onClose={handleClose} severity="success" variant="filled" sx={{ width: '100%' }}>
+          Token found! Redirecting to main page...
+        </Alert>
+      </Snackbar>
+
       <TextField
         fullWidth
         name="email"
         label="Email address"
-        defaultValue="hello@gmail.com"
         InputLabelProps={{ shrink: true }}
         sx={{ mb: 3 }}
+        onChange={(e) => setEmailValue(e.target.value)}
+        value={emailValue}
       />
-
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-        Forgot password?
-      </Link>
-
-      <TextField
+      {!isEmailValid && (
+        <Typography variant="body2" color="text.secondary">
+          Valid Email:
+        </Typography>
+      )}
+      {emailValue.trim().length <= 0 && (
+        <Typography variant="body2" color="text.secondary">
+          ❌ Must not be empty
+        </Typography>
+      )}
+      {!emailValue.includes('@') && (
+        <Typography variant="body2" color="text.secondary">
+          ❌ Includes &quot;@&quot;
+        </Typography>
+      )}
+      {!emailValue.includes('gmail.com') && (
+        <Typography variant="body2" color="text.secondary">
+          ❌ Includes &quot;gmail.com&quot;
+        </Typography>
+      )}
+      <Button
+        sx={{ mb: 3, mt: 3 }}
         fullWidth
-        name="password"
-        label="Password"
-        defaultValue="@demo1234"
-        InputLabelProps={{ shrink: true }}
-        type={showPassword ? 'text' : 'password'}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-        sx={{ mb: 3 }}
-      />
-
+        variant="contained"
+        onClick={handleGenerateKey}
+        disabled={!isEmailValid}
+      >
+        Magic Link 🔗
+      </Button>
       <LoadingButton
         fullWidth
         size="large"
@@ -76,35 +148,11 @@ export function SignInView() {
       <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
         <Typography variant="h5">Sign in</Typography>
         <Typography variant="body2" color="text.secondary">
-          Don’t have an account?
-          <Link variant="subtitle2" sx={{ ml: 0.5 }}>
-            Get started
-          </Link>
+          Enter your email address and click the magic link button!
         </Typography>
       </Box>
 
       {renderForm}
-
-      <Divider sx={{ my: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-        <Typography
-          variant="overline"
-          sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}
-        >
-          OR
-        </Typography>
-      </Divider>
-
-      <Box gap={1} display="flex" justifyContent="center">
-        <IconButton color="inherit">
-          <Iconify icon="logos:google-icon" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify icon="eva:github-fill" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify icon="ri:twitter-x-fill" />
-        </IconButton>
-      </Box>
     </>
   );
 }
